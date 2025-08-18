@@ -45,7 +45,6 @@ class MultiRegionRecruitment:
         
         # Generate rates (flant array of rates for all sites)
         alphas = np.repeat(this_alpha, this_N)
-        print(f"alphas: {alphas}")
         betas = np.repeat(this_beta, this_N)
         individual_rates = gamma.rvs(a=alphas, scale=1/betas, size=sum(this_N))
 
@@ -80,14 +79,17 @@ class MultiRegionRecruitment:
 
         return this_trial
 
-    def genData(self):
+    def genData(self, export_json=True, filename='recruitment_data.json'):
         self.data = {}
         for trialIndex in range(self.n_trials):
             self.data[f"Trial {trialIndex}"] = self._genData_trial(trialIndex)
         
+        if export_json:
+            self._saveData(filename)
+        
         return self.data
     
-    def saveData(self, filename):
+    def _saveData(self, filename):
         """ Save the generated data to a JSON file."""
         if not filename.endswith('.json'):
             filename += '.json'
@@ -97,8 +99,8 @@ class MultiRegionRecruitment:
         full_path = os.path.abspath(filename)
         print(f"Data has been successfully saved to {full_path}")
 
-
-# Example usage 1
+#################################################################
+# Example usage 1:
 n_trials = 2                                # number of simulations
 M = [2, 5]                                  # number of regions
 alpha = [[0.5, 2], 
@@ -108,12 +110,11 @@ beta = [[0.5, 4],
 N = [[2,3], [3,3,4,5,7]]                    # number of sites in each region
 n = [50, 500]                               # number of patients to recruit
 
-# test = MultiRegionRecruitment(n_trials, M, N, n, alpha, beta)
-# data = test.genData()
-# test.saveData('test1_recruitment_data.json')
+test = MultiRegionRecruitment(n_trials, M, N, n, alpha, beta)
+data = test.genData(export_json=True, filename='test1_recruitment_data.json')
 
-
-# Example usage 2
+#################################################################
+# Example usage 2:
 n_trials = 2                                # number of simulations
 M = [2, 5]                                  # number of regions
 # (alpha, beta), each tuple represents (shape, rate) for each region
@@ -124,8 +125,7 @@ N = [[2,3], [3,3,4,5,7]]                    # number of sites in each region
 n = [50, 500]                               # number of patients to recruit
 
 test = MultiRegionRecruitment(n_trials, M, N, n, alpha, beta)
-data = test.genData()
-test.saveData('test2_recruitment_data.json')
+data = test.genData(export_json=True, filename='test2_recruitment_data.json')
 
 
  
