@@ -79,7 +79,7 @@ class MultiRegionRecruitment:
 
         return this_trial
 
-    def genData(self, export_json=True, filename='recruitment_data.json'):
+    def genData(self, export_json=False, filename='recruitment_data.json'):
         self.data = {}
         for trialIndex in range(self.n_trials):
             self.data[f"Trial {trialIndex}"] = self._genData_trial(trialIndex)
@@ -99,33 +99,49 @@ class MultiRegionRecruitment:
         full_path = os.path.abspath(filename)
         print(f"Data has been successfully saved to {full_path}")
 
+    def getRecruitmentTime(self):
+        recruitment_times = []
+        for trial in self.data.values():
+            recruitment_times.append(trial["Total Recruitment Time"])
+        return recruitment_times
+    
+    def getRecruitmentDistribution(self):
+        recruitment_distribution = []
+        for trial in self.data.values():
+            distribution = []
+            for region, counts in trial.items():
+                if region != "Total Recruitment Time":
+                    distribution.append(counts)
+            recruitment_distribution.append(distribution)
+        return recruitment_distribution
+
 #################################################################
 # Example usage 1:
-n_trials = 2                                # number of simulations
-M = [2, 5]                                  # number of regions
-alpha = [[0.5, 2], 
-         [0.5, 1, 0.75, 0.5, 2]]            # shape
-beta = [[0.5, 4],
-        [2, 2, 2, 0.5, 1]]                  # rate
-N = [[2,3], [3,3,4,5,7]]                    # number of sites in each region
-n = [50, 500]                               # number of patients to recruit
+# n_trials = 2                                # number of simulations
+# M = [2, 5]                                  # number of regions
+# alpha = [[0.5, 2], 
+#          [0.5, 1, 0.75, 0.5, 2]]            # shape
+# beta = [[0.5, 4],
+#         [2, 2, 2, 0.5, 1]]                  # rate
+# N = [[2,3], [3,3,4,5,7]]                    # number of sites in each region
+# n = [50, 500]                               # number of patients to recruit
 
-test = MultiRegionRecruitment(n_trials, M, N, n, alpha, beta)
-data = test.genData(export_json=True, filename='test1_recruitment_data.json')
+# test = MultiRegionRecruitment(n_trials, M, N, n, alpha, beta)
+# data = test.genData(export_json=True, filename='test1_recruitment_data.json')
 
 #################################################################
 # Example usage 2:
-n_trials = 2                                # number of simulations
-M = [2, 5]                                  # number of regions
-# (alpha, beta), each tuple represents (shape, rate) for each region
-gamma_params = {"Trial 1": [(0.5, 2), (0.5, 4)],
-                "Trial 2": [(0.5, 1), (0.75, 2), (0.5, 2), (2, 2), (1, 0.5)]} 
+# n_trials = 2                                # number of simulations
+# M = [2, 5]                                  # number of regions
+# # (alpha, beta), each tuple represents (shape, rate) for each region
+# gamma_params = {"Trial 1": [(0.5, 2), (0.5, 4)],
+#                 "Trial 2": [(0.5, 1), (0.75, 2), (0.5, 2), (2, 2), (1, 0.5)]} 
 
-N = [[2,3], [3,3,4,5,7]]                    # number of sites in each region
-n = [50, 500]                               # number of patients to recruit
+# N = [[2,3], [3,3,4,5,7]]                    # number of sites in each region
+# n = [50, 500]                               # number of patients to recruit
 
-test = MultiRegionRecruitment(n_trials, M, N, n, alpha, beta)
-data = test.genData(export_json=True, filename='test2_recruitment_data.json')
+# test = MultiRegionRecruitment(n_trials, M, N, n, alpha, beta)
+# data = test.genData(export_json=True, filename='test2_recruitment_data.json')
 
 
  
