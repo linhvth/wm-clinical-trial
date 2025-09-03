@@ -19,7 +19,7 @@
 		First of all, it is all about mathematical convenience: ***conjugate prior.*** If we believe that $\lambda \sim \mathrm{Gamma}(\alpha_0, \beta_0)$ prior distribution and we observe $n \sim \mathrm{Pois}(\lambda t)$, then the ***posterior distribution*** for $\lambda$ is also a Gamma distribution, that is:
 		$$\lambda \mid n, t \sim \mathrm{Gamma}(\alpha_0 + n, \beta_0 + t)$$
 		Also, the Gamma distribution is defined only for $\lambda > 0$, which aligns with the reality of a recruitment rate (we cannot recruit a negative number of patients). Explained in [@anisimov2007modelling], this approach is useful as the rates at the beginning of the trial can be very close to 0, and it definitely will change over time. One question can be asked when we derive the posterior distribution, we use $n$ and $t$, and assume that $\lambda$ is constant over $t$, which seldomly holds true in practice. Then, how should we improve the techniques? The Introduction section in [this paper]() sounds helpful.
-
+4. Across publicly available data, the recruitment rates of trials sharing a common set of characteristics are assumed to be independent and identically distributed (i.i.d.) random variables following a single Gamma distribution, $\mathrm{Gamma}(\alpha, \beta)$
 
 ### Distribution of $T(n, N)$
 Let $n_i(t)$ is the number of patients recruited by site $i$ until time $t$. We know that $n_i(t) \sim \mathrm{Pois}(\lambda_i)$ assume $\lambda_i$ is the rate of recruitment per one time period $t$. By the Poisson's property of convolution, we have:

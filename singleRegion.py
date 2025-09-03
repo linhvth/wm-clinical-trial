@@ -25,8 +25,8 @@ class SingleRegionRecruitment:
         
         for _ in range(self.n_trials):
             # Generate individual recruitment rates from a Gamma distribution
-            individual_rates = gamma.rvs(a=self.alpha, scale=1/self.beta, size=self.N)
-            arrival_times = expon.rvs(scale=1/individual_rates) #init
+            individual_rates = np.random.gamma(shape=self.alpha, scale=1/self.beta, size=self.N)
+            arrival_times = np.random.exponential(scale=1/individual_rates)
 
             site_recruit_counts = np.zeros(self.N)
             patient_counts = 0
@@ -43,7 +43,7 @@ class SingleRegionRecruitment:
 
                 # Update for the next iteration
                 arrival_times -= arrival_times[min_rate_index]  # Decrease all times by the minimum
-                arrival_times[min_rate_index] = expon.rvs(scale=1/individual_rates[min_rate_index])
+                arrival_times[min_rate_index] = np.random.exponential(scale=1/individual_rates[min_rate_index])
 
             self.simulation_results["recruitment_time"].append(T_n_N)
             self.simulation_results["recruitment_dist"].append(site_recruit_counts)

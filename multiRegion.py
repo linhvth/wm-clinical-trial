@@ -115,6 +115,9 @@ class MultiRegionRecruitment:
             recruitment_distribution.append(distribution)
         return recruitment_distribution
 
+
+#################################################################
+# TESTING
 #################################################################
 # Example usage 1:
 # n_trials = 2                                # number of simulations

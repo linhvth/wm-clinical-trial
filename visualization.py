@@ -23,7 +23,8 @@ def sim_histogram(simulation_results, N, n, alpha, beta, title=None):
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.show()
 
-def sim_multiHistogram(simulation_results1, simulation_results2, N, n, alpha, beta, title=None, label1='Simulation 1', label2='Simulation 2', color1='blue', color2='green'):
+def sim_multiHistogram(simulation_results1, simulation_results2, N, n, alpha, beta, 
+                       title=None, label1='Simulation 1', label2='Simulation 2', color1='blue', color2='green'):
     plt.figure(figsize=(10, 6))
 
     # Plot the histogram of the first simulation results
