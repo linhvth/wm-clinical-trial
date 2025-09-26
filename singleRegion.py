@@ -1,4 +1,4 @@
-from scipy.stats import gamma, expon, betaprime
+from scipy.stats import gamma, expon, betaprime, geom
 import numpy as np
 import matplotlib.pyplot as plt
 import json, os
@@ -6,13 +6,14 @@ import json, os
 from visualization import sim_histogram
 
 class SingleRegionRecruitment:
-    def __init__(self, n_trials, N, n, alpha=None, beta=None):
+    def __init__(self, n_trials, N, n, alpha=None, beta=None, time_stamp=False):
         self.n_trials = n_trials 
         self.N = N                  # number of sites
         self.n = n                  # number of patients to recruit
         self.alpha = alpha 
         self.beta = beta
-
+        self.time_stamp = time_stamp
+        
     def genData(self, export_json=False, filename='single_region_data.json'):
         """
         Simulate the time to recruit n patients from N sites.
@@ -22,6 +23,9 @@ class SingleRegionRecruitment:
         """
         self.simulation_results = {"recruitment_time": [],
                                     "recruitment_dist": []}
+        
+        if self.time_stamp:
+            self.simulation_results["recruitment_record"] = []
         
         for _ in range(self.n_trials):
             # Generate individual recruitment rates from a Gamma distribution
@@ -41,6 +45,13 @@ class SingleRegionRecruitment:
                 site_recruit_counts[min_rate_index] += 1
                 T_n_N += arrival_times[min_rate_index]
 
+                if self.time_stamp:
+                    self.simulation_results["recruitment_record"].append({
+                        "patient_id": patient_counts,
+                        "site_id": int(min_rate_index) + 1,  # +1 for 1-based indexing
+                        "arrival_time": T_n_N
+                    })
+
                 # Update for the next iteration
                 arrival_times -= arrival_times[min_rate_index]  # Decrease all times by the minimum
                 arrival_times[min_rate_index] = np.random.exponential(scale=1/individual_rates[min_rate_index])
@@ -56,6 +67,12 @@ class SingleRegionRecruitment:
     
     def getRecruitmentDistribution(self):
         return self.simulation_results["recruitment_dist"]
+    
+    def getRecruitmentRecord(self): 
+        if self.time_stamp:
+            return self.simulation_results["recruitment_record"]
+        else:
+            raise ValueError("Time stamp data was not recorded. Set time_stamp=True when initializing the class.")
     
     def _saveData(self, filename):
         """ Save the generated data to a JSON file."""

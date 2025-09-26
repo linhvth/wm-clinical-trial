@@ -51,6 +51,7 @@ f_T(t) &= \int_0^\infty f_{T \mid \Lambda} (t) \, f_\Lambda (\lambda) \, d\lambd
 $$
 Thus, $T(n, N)$ follows a scaled Beta prime distribution with two shape parameters $n$ and $\alpha N$, and a scale parameter $\beta$.
 
-
+### Compare 2 approaches
+#### Approach 1: 
 ### References
 
