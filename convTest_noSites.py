@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
-from scipy.stats import gamma
 from singleRegion import SingleRegionRecruitment
 from misc import *
 
@@ -32,7 +31,7 @@ for N, n in sim_settings:
 
         res = minimize(neg_loglik, x0=[1.0, 1.0],
                        args=(np.array([N]), np.array([n]), t_obs),
-                       bounds=[(1e-9,None),(1e-9,None)])
+                       method='L-BFGS-B', bounds=[(1e-9,None),(1e-9,None)])
         if res.success:
             ahat, bhat = res.x
             alpha_hats.append(ahat)
