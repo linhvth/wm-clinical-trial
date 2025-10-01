@@ -17,7 +17,7 @@ psi = 1/50              # parameter for Geometric distribution of number of site
 gamma = 5               # parameter for Geometric distribution of number of patients to recruit
 
 ### Simulate data for past trials, get alpha_est and beta_est by MLE
-sim_N_n = simulate_N_n(psi=psi, gamma=gamma, n_trials=K, region_num=1)
+sim_N_n = helper_summary_simulate_N_n(psi=psi, gamma=gamma, n_trials=K, region_num=1)
 sim_N = sim_N_n[:, 0]
 sim_n = sim_N_n[:, 1]
 

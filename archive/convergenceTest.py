@@ -165,7 +165,7 @@ for N, n in sim_settings:
     plt.tight_layout(rect=[0, 0.03, 1, 0.96])
 
     # Save the figure
-    filename = FIGURES_DIR / f"Experiment_N{N}_n{n}_Dynamic80PctZoom.png" # Changed filename
+    filename = FIGURES_DIR / f"Experiment_N{N}_n{n}_Dynamic80PctZoom.png"
     plt.savefig(filename)
     plt.close(fig)
 

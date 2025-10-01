@@ -2,6 +2,7 @@ import math
 import numpy as np
 from scipy.special import loggamma, betaln
 from scipy.stats import geom, betaprime
+from singleRegion import SingleRegionRecruitment
 
 def beta_function(x, y):
     if x <= 0 or y <= 0:
@@ -47,7 +48,7 @@ def neg_loglik(params, N, n, t):
     alpha, beta = params
     return -loglik(alpha, beta, N, n, t)
 
-def simulate_N_n(psi=1/50, gamma=5, n_trials=1, region_num=1):
+def helper_summary_simulate_N_n(psi=1/50, gamma=5, n_trials=1, region_num=1):
     if region_num == 1:
         sim_N_n_data = []
         for _ in range(n_trials):
@@ -59,6 +60,24 @@ def simulate_N_n(psi=1/50, gamma=5, n_trials=1, region_num=1):
         return np.array(sim_N_n_data)
     else:
         return None
+    
+def simulate_summary_data(alpha_true, beta_true, psi=1/50, gamma=5, n_trials=1, region_num=1):
+    if region_num == 1:
+        sim_N_n = helper_summary_simulate_N_n(psi=psi, gamma=gamma, 
+                                                   n_trials=n_trials, region_num=region_num)
+
+        # Simulate recruitment times for each (N, n) pair
+        recruitment_time = []
+        for N, n in sim_N_n:
+            this_trial = SingleRegionRecruitment(n_trials=1, N=N, n=n, 
+                                                alpha=alpha_true, beta=beta_true)
+            this_trial.genData()
+            recruitment_time.append(this_trial.getRecruitmentTime())
+
+        sim_recruitment_times = np.array(recruitment_time).flatten()
+        return sim_N_n, sim_recruitment_times
+    else:
+        return None, None # latter for multiregion case
     
 def neg_loglik_weighted(params, past_data, new_data, gamma_weight):
     """
