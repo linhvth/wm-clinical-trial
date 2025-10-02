@@ -10,22 +10,23 @@ from misc import *
 
 N_curr = 20
 n_curr = 100
-sim_settings = [5, 10, 20, 50, 100]  # number of trials in the past data
+sim_settings = [5, 20, 100]  # number of trials in the past data
 weights = [0.2, 0.5, 0.7, 0.9] # weight on past trials data
 
 alpha_true, beta_true = 2.0, 1.0
-R = 1000 # replicates
+R = 100 # replicates
 REQUIRED_COVERAGE = 80
 
-# # --- File Saving Setup ---
-# FIGURES_DIR = Path("figures")
-# # Create the directory if it does not exist
-# FIGURES_DIR.mkdir(exist_ok=True) 
-# print(f"Saving figures to: {FIGURES_DIR.resolve()}")
-# # -------------------------
+# --- File Saving Setup ---
+FIGURES_DIR = Path("figures")
+# Create the directory if it does not exist
+FIGURES_DIR.mkdir(exist_ok=True) 
+print(f"Saving figures to: {FIGURES_DIR.resolve()}")
+# -------------------------
 
 for K in sim_settings:
     alpha_hats, beta_hats = [], []
+    no_sites = [] # total no. sites in past trials 
     for _ in range(R):
         # Past trials data
         sim_N_n, t_obs= simulate_summary_data(alpha_true, beta_true, psi=1/50, gamma=5, n_trials=K, region_num=1)
@@ -55,10 +56,12 @@ for K in sim_settings:
             ahat, bhat = res.x
             alpha_hats.append(ahat)
             beta_hats.append(bhat)
+            no_sites.append(np.sum(sim_N))
 
     alpha_hats = np.array(alpha_hats)
     beta_hats = np.array(beta_hats)
-    
+    no_sites = np.array(no_sites)
+
     # Check if there are successful runs before plotting
     if len(alpha_hats) == 0:
         print(f"No successful runs for K={K}. Skipping plot.")
@@ -73,15 +76,18 @@ for K in sim_settings:
     print(f"  Estimates: alpha_hat mean={np.mean(alpha_hats):.3f}, "
           f"beta_hat mean={np.mean(beta_hats):.3f}")
     print(f"  Ratio estimate mean={np.mean(ratio_hats):.3f}")
+    print(f"  Average no. sites in past trials: {np.mean(no_sites):.1f}")
 
-    # Plot Histograms
-    plt.figure(figsize=(15, 4))
-
-    plt.subplot(1, 3, 1)
-    plt.hist(alpha_hats, bins=20, color='skyblue', edgecolor='black', alpha=0.7)
-    plt.axvline(alpha_true, color='red', linestyle='dashed', linewidth=2)
-    plt.title(f'Histogram of alpha estimates (K={K})')
-    plt.xlabel('Estimated alpha')
-    plt.ylabel('Frequency')
-
-    plt.subplot
+    # --- (1) Saving Results to File ---
+    results_filename = f"results_K_{K}.npz"
+    try:
+        np.savez(
+            str(results_filename),
+            alpha_hats=alpha_hats,
+            beta_hats=beta_hats,
+            ratio_hats=ratio_hats,
+            no_sites=no_sites
+        )
+        print(f"  Saved simulation results for K={K} to {results_filename}")
+    except Exception as e:
+        print(f"  Error saving data for K={K}: {e}")
