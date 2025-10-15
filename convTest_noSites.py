@@ -8,21 +8,7 @@ from scipy.optimize import minimize
 from singleRegion import SingleRegionRecruitment
 from misc import *
 
-sim_settings = [(10, 100), (50, 100), (100, 100), 
-                (1000, 100), (10000, 100)]  # (N, n)
-
-alpha_true, beta_true = 2.0, 1.0
-R = 1000 # replicates
-REQUIRED_COVERAGE = 80
-
-# --- File Saving Setup ---
-FIGURES_DIR = Path("figures")
-# Create the directory if it does not exist
-FIGURES_DIR.mkdir(exist_ok=True) 
-print(f"Saving figures to: {FIGURES_DIR.resolve()}")
-# -------------------------
-
-for N, n in sim_settings:
+def convTest_noSites_sim(N, n, R, alpha_true, beta_true, DATA_DIR):
     alpha_hats, beta_hats = [], []
     for _ in range(R):
         trial = SingleRegionRecruitment(1, N, n, alpha=alpha_true, beta=beta_true)
@@ -39,11 +25,6 @@ for N, n in sim_settings:
 
     alpha_hats = np.array(alpha_hats)
     beta_hats = np.array(beta_hats)
-    
-    # Check if there are successful runs before plotting
-    if len(alpha_hats) == 0:
-        print(f"No successful runs for N={N}, n={n}. Skipping plot.")
-        continue
 
     # Calculate the magnitude/ratio
     ratio_hats = alpha_hats / beta_hats
@@ -55,20 +36,30 @@ for N, n in sim_settings:
           f"beta_hat mean={np.mean(beta_hats):.3f}")
     print(f"  Ratio estimate mean={np.mean(ratio_hats):.3f}")
 
+    # Saving Results to File
+    results_filename = DATA_DIR / f"sim_results_N={N}_n={n}.npz"
+    try:
+        np.savez(
+            str(results_filename),
+            alpha_hats=alpha_hats,
+            beta_hats=beta_hats,
+            ratio_hats=ratio_hats,
+        )
+        print(f"  Saved simulation results for N={N} and n={n} to {results_filename}")
+    except Exception as e:
+        print(f"  Error saving data for N={N} and n={n}: {e}")
+
+def plot_histograms(N, n, alpha_hats, beta_hats, ratio_hats, R, alpha_true, beta_true, REQUIRED_COVERAGE, FIGURES_DIR):
     # Plot Histograms
-    
     if len(alpha_hats) == 0:
         print(f"No successful runs for N={N}, n={n}. Skipping plot.")
-        continue
-
-    # Calculate the magnitude/ratio
-    ratio_hats = alpha_hats / beta_hats
+        return
 
     # Calculate overall means
     alpha_mean = np.mean(alpha_hats)
     beta_mean = np.mean(beta_hats)
 
-    # --- Dynamic Range Calculation to ensure >= 80% coverage ---
+    # Dynamic Range Calculation to ensure >= 80% coverage
     
     def calculate_dynamic_zoom_range(estimates, mean, coverage_pct):
         """Calculates the [0, max_limit] range that meets the coverage requirement."""
@@ -164,8 +155,38 @@ for N, n in sim_settings:
     plt.tight_layout(rect=[0, 0.03, 1, 0.96])
 
     # Save the figure
-    filename = FIGURES_DIR / f"Experiment_N{N}_n{n}_Dynamic80PctZoom.png"
+    filename = FIGURES_DIR / f"Experiment_N={N}_n={n}_Dynamic80PctZoom.png"
     plt.savefig(filename)
     plt.close(fig)
 
     print(f"Saved figure to: {filename}")
+
+def noSites_extract_and_plot_results(N, n, R, alpha_true, beta_true, REQUIRED_COVERAGE, DATA_DIR, FIGURES_DIR):
+    """
+    Loads saved simulation results and calls the plotting function.
+    """
+    results_filename = Path(f"{DATA_DIR}/sim_results_N={N}_n={n}.npz")
+    if not results_filename.exists():
+        print(f"File not found: {results_filename.name}. Cannot visualize.")
+        return
+
+    data = np.load(str(results_filename))
+    
+    alpha_hats = data['alpha_hats']
+    beta_hats = data['beta_hats']
+    ratio_hats = data['ratio_hats']
+    
+    if len(alpha_hats) == 0:
+        print(f"No successful runs found in saved data for N={N} and n={n}.")
+        return
+
+    ratio_true = alpha_true / beta_true
+    print(f"\n--- Loaded results for N={N} and n={n} (Successes: {len(alpha_hats)}/{R}) ---")
+    print(f"  True: alpha={alpha_true}, beta={beta_true}, ratio={ratio_true:.3f}")
+    print(f"  Estimates: alpha_hat mean={np.mean(alpha_hats):.3f}, "
+          f"beta_hat mean={np.mean(beta_hats):.3f}")
+    print(f"  Ratio estimate mean={np.mean(ratio_hats):.3f}")
+
+    plot_histograms(N, n, alpha_hats, beta_hats, ratio_hats, R, alpha_true, beta_true, REQUIRED_COVERAGE, FIGURES_DIR)
+    
+    print(f"  Re-plotted figure for N={N} and n={n} from saved data.")

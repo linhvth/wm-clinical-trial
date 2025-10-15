@@ -74,6 +74,7 @@ for t in mark_time:
                     args=(N_new, n_t, t),
                     method='L-BFGS-B', bounds=[(1e-9, None), (1e-9, None)]
     )
+    
     print("\n--- Optimization Results (New Trial Only) ---")
     alpha_est_new, beta_est_new = result.x
     print(f"Estimated alpha (new trial only): {alpha_est_new:.4f}")
@@ -89,9 +90,5 @@ for t in mark_time:
 
         # Print the estimated parameters
         alpha_est1, beta_est1 = result1.x
-        # print(f"Success: {result1.success}")
-        # print(f"Message: {result1.message}")
         print(f"Estimated alpha (weighted MLE): {alpha_est1:.4f}")
         print(f"Estimated beta (weighted MLE): {beta_est1:.4f}")
-        # print(f"Estimated t+: {(predict_remaining_time(alpha_est1, beta_est1, N_new, n_new-n_t)):.4f}")
-        # print(f"True t+: {(new_recruitment_time - t):.4f}")

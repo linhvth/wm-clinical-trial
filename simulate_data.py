@@ -56,7 +56,7 @@ print(f"True alpha: {alpha_true}")
 print(f"True beta: {beta_true}")
 
 ### New trial simulation
-N_new, n_new  = simulate_N_n(psi=psi, gamma=gamma, n_trials=1, region_num=1)[0]
+N_new, n_new  = helper_summary_simulate_N_n(psi=psi, gamma=gamma, n_trials=1, region_num=1)[0]
 print("\n--- New Trial Parameters ---")
 print(f"New Trial - N: {N_new}, n: {n_new}")
 
