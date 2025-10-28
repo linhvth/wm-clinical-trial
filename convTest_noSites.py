@@ -8,15 +8,21 @@ from scipy.optimize import minimize
 from singleRegion import SingleRegionRecruitment
 from misc import *
 
-def convTest_noSites_sim(N, n, R, alpha_true, beta_true, DATA_DIR):
+def convTest_noSites_sim(N, t, R, alpha_true, beta_true, DATA_DIR=None, 
+                         STATS_DIR="results/noSites_convergence_stats.txt"):
     alpha_hats, beta_hats = [], []
+    n_dot = []
     for _ in range(R):
-        trial = SingleRegionRecruitment(1, N, n, alpha=alpha_true, beta=beta_true)
+        if _ % 1000 == 0:
+            print(f"  Running replicate {_+1}/{R} for N={N}, t={t}...")
+            
+        trial = SingleRegionRecruitment(1, N, t=t, alpha=alpha_true, beta=beta_true)
         trial.genData()
-        t_obs = np.array(trial.getRecruitmentTime())
+        n_c_lst = trial.simulation_results["recruitment_dist"][0]
+        n_dot.append(np.sum(n_c_lst))
 
-        res = minimize(neg_loglik, x0=[1.0, 1.0],
-                       args=(np.array([N]), np.array([n]), t_obs),
+        res = minimize(neg_loglik_mountain, x0=[1.0, 1.0],
+                       args=(np.array([N]), np.array(n_c_lst), t),
                        method='L-BFGS-B', bounds=[(1e-9,None),(1e-9,None)])
         if res.success:
             ahat, bhat = res.x
@@ -29,30 +35,33 @@ def convTest_noSites_sim(N, n, R, alpha_true, beta_true, DATA_DIR):
     # Calculate the magnitude/ratio
     ratio_hats = alpha_hats / beta_hats
     
-    # Print Summary Statistics
-    print(f"N={N}, n={n} (Successes: {len(alpha_hats)}/{R}):")
-    print(f"  True: alpha={alpha_true}, beta={beta_true}, ratio={alpha_true/beta_true:.3f}")
-    print(f"  Estimates: alpha_hat mean={np.mean(alpha_hats):.3f}, "
-          f"beta_hat mean={np.mean(beta_hats):.3f}")
-    print(f"  Ratio estimate mean={np.mean(ratio_hats):.3f}")
-
     # Saving Results to File
-    results_filename = DATA_DIR / f"sim_results_N={N}_n={n}.npz"
-    try:
-        np.savez(
-            str(results_filename),
-            alpha_hats=alpha_hats,
-            beta_hats=beta_hats,
-            ratio_hats=ratio_hats,
-        )
-        print(f"  Saved simulation results for N={N} and n={n} to {results_filename}")
-    except Exception as e:
-        print(f"  Error saving data for N={N} and n={n}: {e}")
+    with open(STATS_DIR, "a") as f:
+        f.write(f"N={N}, t={t}, n.={np.mean(n_dot)} (Successes: {len(alpha_hats)}/{R}):\n")
+        f.write(f"  True: alpha={alpha_true}, beta={beta_true}, ratio={alpha_true/beta_true:.3f}\n")
+        
+        f.write(f"  Estimates: alpha_hat mean={np.mean(alpha_hats):.3f}, "
+                f"beta_hat mean={np.mean(beta_hats):.3f}\n")
+        
+        f.write(f"  Ratio estimate mean={np.mean(ratio_hats):.3f}\n\n")
 
-def plot_histograms(N, n, alpha_hats, beta_hats, ratio_hats, R, alpha_true, beta_true, REQUIRED_COVERAGE, FIGURES_DIR):
+    if DATA_DIR is not None:
+        results_filename = DATA_DIR / f"sim_results_N={N}_t={t}.npz"
+        try:
+            np.savez(
+                str(results_filename),
+                alpha_hats=alpha_hats,
+                beta_hats=beta_hats,
+                ratio_hats=ratio_hats,
+            )
+            print(f"  Saved simulation results for N={N} and t={t} to {results_filename}")
+        except Exception as e:
+            print(f"  Error saving data for N={N} and t={t}: {e}")
+
+def plot_histograms(N, t, alpha_hats, beta_hats, ratio_hats, R, alpha_true, beta_true, REQUIRED_COVERAGE, FIGURES_DIR):
     # Plot Histograms
     if len(alpha_hats) == 0:
-        print(f"No successful runs for N={N}, n={n}. Skipping plot.")
+        print(f"No successful runs for N={N}, t={t}. Skipping plot.")
         return
 
     # Calculate overall means
@@ -155,17 +164,17 @@ def plot_histograms(N, n, alpha_hats, beta_hats, ratio_hats, R, alpha_true, beta
     plt.tight_layout(rect=[0, 0.03, 1, 0.96])
 
     # Save the figure
-    filename = FIGURES_DIR / f"Experiment_N={N}_n={n}_Dynamic80PctZoom.png"
+    filename = FIGURES_DIR / f"Experiment_N={N}_t={t}_Dynamic80PctZoom.png"
     plt.savefig(filename)
     plt.close(fig)
 
     print(f"Saved figure to: {filename}")
 
-def noSites_extract_and_plot_results(N, n, R, alpha_true, beta_true, REQUIRED_COVERAGE, DATA_DIR, FIGURES_DIR):
+def noSites_extract_and_plot_results(N, t, R, alpha_true, beta_true, REQUIRED_COVERAGE, DATA_DIR, FIGURES_DIR):
     """
     Loads saved simulation results and calls the plotting function.
     """
-    results_filename = Path(f"{DATA_DIR}/sim_results_N={N}_n={n}.npz")
+    results_filename = Path(f"{DATA_DIR}/sim_results_N={N}_t={t}.npz")
     if not results_filename.exists():
         print(f"File not found: {results_filename.name}. Cannot visualize.")
         return
@@ -177,11 +186,11 @@ def noSites_extract_and_plot_results(N, n, R, alpha_true, beta_true, REQUIRED_CO
     ratio_hats = data['ratio_hats']
     
     if len(alpha_hats) == 0:
-        print(f"No successful runs found in saved data for N={N} and n={n}.")
+        print(f"No successful runs found in saved data for N={N} and t={t}.")
         return
 
     ratio_true = alpha_true / beta_true
-    print(f"\n--- Loaded results for N={N} and n={n} (Successes: {len(alpha_hats)}/{R}) ---")
+    print(f"\n--- Loaded results for N={N} and t={t} (Successes: {len(alpha_hats)}/{R}) ---")
     print(f"  True: alpha={alpha_true}, beta={beta_true}, ratio={ratio_true:.3f}")
     print(f"  Estimates: alpha_hat mean={np.mean(alpha_hats):.3f}, "
           f"beta_hat mean={np.mean(beta_hats):.3f}")
@@ -189,4 +198,4 @@ def noSites_extract_and_plot_results(N, n, R, alpha_true, beta_true, REQUIRED_CO
 
     plot_histograms(N, n, alpha_hats, beta_hats, ratio_hats, R, alpha_true, beta_true, REQUIRED_COVERAGE, FIGURES_DIR)
     
-    print(f"  Re-plotted figure for N={N} and n={n} from saved data.")
+    print(f"  Re-plotted figure for N={N} and t={t} from saved data.")

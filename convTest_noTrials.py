@@ -8,32 +8,22 @@ from scipy.optimize import minimize
 from singleRegion import SingleRegionRecruitment
 from misc import *
 
-def convTest_noTrials_sim(K, R, w, alpha_true, beta_true, N_curr, n_curr, DATA_DIR):
+def convTest_noTrials_sim(K, R,  alpha_true, beta_true, DATA_DIR=None,
+                          STATS_DIR="results/noTrials_convergence_stats.txt"):
     alpha_hats, beta_hats = [], []
     no_sites = [] # total no. sites in past trials 
+    t = []
     for _ in range(R):
+        if _ % 1000 == 0:
+            print(f"  Running replicate {_+1}/{R} for K={K}...")
         # Past trials data
         sim_N_n, t_obs= simulate_summary_data(alpha_true, beta_true, psi=1/50, gamma=5, n_trials=K, region_num=1)
         sim_N = sim_N_n[:, 0]
         sim_n = sim_N_n[:, 1]
-        past_data = {
-                        'N': sim_N,
-                        'n': sim_n,
-                        't': t_obs
-                    }
+        t.append(t_obs)
 
-        # Current trial data
-        trial = SingleRegionRecruitment(1, N_curr, n_curr, alpha=alpha_true, beta=beta_true)
-        trial.genData()
-        t_obs_new = np.array(trial.getRecruitmentTime())
-        new_data = {
-            'N': np.array([N_curr]),
-            'n': np.array([n_curr]),
-            't': np.array([t_obs_new])
-        }
-
-        res = minimize(neg_loglik_weighted, x0=[0.0, 0.0],
-                       args=(past_data, new_data, w),
+        res = minimize(neg_loglik, x0=[0.0, 0.0],
+                       args=(sim_N, sim_n, t_obs),
                        method='L-BFGS-B', bounds=[(1e-9,None),(1e-9,None)])
         
         if res.success:
@@ -49,27 +39,32 @@ def convTest_noTrials_sim(K, R, w, alpha_true, beta_true, N_curr, n_curr, DATA_D
     # Calculate the magnitude/ratio
     ratio_hats = alpha_hats / beta_hats
     
-    # Print Summary Statistics
-    print(f"K={K} (Successes: {len(alpha_hats)}/{R}):")
-    print(f"  True: alpha={alpha_true}, beta={beta_true}, ratio={alpha_true/beta_true:.3f}")
-    print(f"  Estimates: alpha_hat mean={np.mean(alpha_hats):.3f}, "
-          f"beta_hat mean={np.mean(beta_hats):.3f}")
-    print(f"  Ratio estimate mean={np.mean(ratio_hats):.3f}")
-    print(f"  Average no. sites in past trials: {np.mean(no_sites):.1f}")
+    # Saving Summary Statistics
+    with open(STATS_DIR, "a") as f:
+        f.write(f"K={K}, (Successes: {len(alpha_hats)}/{R}):\n")
+        f.write(f"  Average total no. sites in past trials: {np.mean(no_sites):.1f}\n")
+        f.write(f"  Average observed t in past trials: {np.mean(t):.3f}\n")
+        f.write(f"  True: alpha={alpha_true}, beta={beta_true}, ratio={alpha_true/beta_true:.3f}\n")
+        
+        f.write(f"  Estimates: alpha_hat mean={np.mean(alpha_hats):.3f}, "
+                f"beta_hat mean={np.mean(beta_hats):.3f}\n")
+        
+        f.write(f"  Ratio estimate mean={np.mean(ratio_hats):.3f}\n\n")
 
     # Saving Results to File
-    results_filename = DATA_DIR / f"sim_results_K={K}.npz"
-    try:
-        np.savez(
-            str(results_filename),
-            alpha_hats=alpha_hats,
-            beta_hats=beta_hats,
-            ratio_hats=ratio_hats,
-            no_sites=no_sites
-        )
-        print(f"  Saved simulation results for K={K} to {results_filename}\n")
-    except Exception as e:
-        print(f"  Error saving data for K={K}: {e}")
+    if DATA_DIR is not None:
+        results_filename = DATA_DIR / f"sim_results_K={K}.npz"
+        try:
+            np.savez(
+                str(results_filename),
+                alpha_hats=alpha_hats,
+                beta_hats=beta_hats,
+                ratio_hats=ratio_hats,
+                no_sites=no_sites
+            )
+            print(f"  Saved simulation results for K={K} to {results_filename}\n")
+        except Exception as e:
+            print(f"  Error saving data for K={K}: {e}")
 
 def plot_histograms(K, alpha_hats, beta_hats, ratio_hats, no_sites, R, current_weight, alpha_true, beta_true, FIGURES_DIR):
     """

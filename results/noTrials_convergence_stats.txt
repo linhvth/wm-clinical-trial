@@ -1,0 +1,35 @@
+K=1, (Successes: 9236/10000):
+  Average total no. sites in past trials: 49.8
+  Average observed t in past trials: 25.646
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=831.291, beta_hat mean=4257.149
+  Ratio estimate mean=0.221
+
+K=10, (Successes: 9850/10000):
+  Average total no. sites in past trials: 499.7
+  Average observed t in past trials: 26.329
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=78.593, beta_hat mean=395.261
+  Ratio estimate mean=0.200
+
+K=20, (Successes: 9939/10000):
+  Average total no. sites in past trials: 998.7
+  Average observed t in past trials: 26.331
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=8.786, beta_hat mean=43.869
+  Ratio estimate mean=0.200
+
+K=50, (Successes: 9945/10000):
+  Average total no. sites in past trials: 2497.1
+  Average observed t in past trials: 26.372
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=2.336, beta_hat mean=11.688
+  Ratio estimate mean=0.200
+
+K=100, (Successes: 9962/10000):
+  Average total no. sites in past trials: 4997.7
+  Average observed t in past trials: 26.341
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=2.145, beta_hat mean=10.730
+  Ratio estimate mean=0.200
+

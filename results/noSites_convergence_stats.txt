@@ -1,0 +1,25 @@
+N=10, t=25.25, n.=50.3899 (Successes: 9975/10000):
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=77.104, beta_hat mean=423.382
+  Ratio estimate mean=0.200
+
+N=50, t=25.25, n.=252.8573 (Successes: 9998/10000):
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=2.251, beta_hat mean=11.418
+  Ratio estimate mean=0.200
+
+N=100, t=25.25, n.=504.8607 (Successes: 9998/10000):
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=2.111, beta_hat mean=10.638
+  Ratio estimate mean=0.200
+
+N=1000, t=25.25, n.=5051.1652 (Successes: 9999/10000):
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=2.013, beta_hat mean=10.069
+  Ratio estimate mean=0.200
+
+N=10000, t=25.25, n.=50490.0832 (Successes: 9999/10000):
+  True: alpha=2.0, beta=10.0, ratio=0.200
+  Estimates: alpha_hat mean=2.001, beta_hat mean=10.009
+  Ratio estimate mean=0.200
+
